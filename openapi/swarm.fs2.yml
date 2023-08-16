@@ -1,0 +1,28 @@
+version: "3.2"
+services:
+  fs2pro:
+    image: $REGISTRY:5000/${image_namespace}/fs2pro:${image_tag}
+    networks:
+      - nw_dmz
+    volumes:
+      - ${WORK_DIR}/openapi/config/fs2pro/start.sh:/usr/src/app/fs2pro-react-app/start.sh
+      - ${WORK_DIR}/openapi/config/fs2pro/public/env-config.js:/usr/src/app/fs2pro-react-app/build/env-config.js
+      - ${WORK_DIR}/openapi/config/fs2pro/public/GoogleAnalyticsEmbed.js:/usr/src/app/fs2pro-react-app/build/GoogleAnalyticsEmbed.js
+      - ${WORK_DIR}/swarm.env:/usr/src/app/fs2pro-react-app/.env
+    ports:
+      - "3000:3000"
+    env_file:
+      - ${WORK_DIR}/swarm.env
+    command: ["sh", "./start.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 5s
+      timeout: 10s
+      retries: 40
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.labels.frtend == true]
+networks:
+  nw_dmz:
+    external: true

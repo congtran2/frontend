@@ -1,0 +1,79 @@
+version: "3"
+services:
+  bpsbase:
+    image: $REGISTRY:5000/${image_namespace}/api.bps:${image_tag}
+    networks:
+      - mid-network
+    volumes:
+      - ${WORK_DIR}/openapi/config/bps/base/env:/usr/src/app/bpsserver/config/env      
+      - ${LOG_DIR}/bpsbase:/usr/src/app/bpsserver/log
+    ports:
+     - "1333:1333" 
+    env_file:
+      - ${WORK_DIR}/swarm.env
+    deploy:
+      mode: replicated
+      replicas: ${bpsbase_replicas}
+  bpsreport:
+    image: $REGISTRY:5000/${image_namespace}/api.bps:${image_tag}
+    networks:
+      - mid-network
+    volumes:
+      - ${WORK_DIR}/openapi/config/bps/report/env:/usr/src/app/bpsserver/config/env      
+      - ${LOG_DIR}/bpsreport:/usr/src/app/bpsserver/log
+    ports:
+     - "13331:1333" 
+    env_file:
+      - ${WORK_DIR}/swarm.env
+    deploy:
+      mode: replicated
+      replicas: ${bpsreport_replicas}
+  bpsreportbroker:
+    image: $REGISTRY:5000/${image_namespace}/api.bps:${image_tag}
+    networks:
+      - mid-network
+    volumes:
+      - ${WORK_DIR}/openapi/config/bps/report/env:/usr/src/app/bpsserver/config/env      
+      - ${LOG_DIR}/bpsreportbroker:/usr/src/app/bpsserver/log
+    ports:
+     - "13332:1333" 
+    env_file:
+      - ${WORK_DIR}/swarm.env
+    deploy:
+      mode: replicated
+      replicas: ${bpsreportbroker_replicas}
+  haproxy:
+    image: $REGISTRY:5000/tools/haproxy:1.8-alpine
+    networks:
+      - mid-network
+    volumes:
+      - ${WORK_DIR}/openapi/config/haproxy/rsyslog_haproxy.conf:/etc/rsyslog.d/haproxy.conf
+      - ${WORK_DIR}/openapi/config/haproxy/logrotate_haproxy:/etc/logrotate.d/haproxy
+      - ${WORK_DIR}/openapi/config/haproxy/crontab_logrotate:/etc/cron.hourly/logrotate
+      - ${WORK_DIR}/openapi/config/haproxy/swarm-mid-haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+      - ${LOG_DIR}/mid-haproxy:/usr/src/logs
+    ports:
+     - "80:80" 
+     - "9001:9000"
+    env_file:
+      - ${WORK_DIR}/swarm.env
+    deploy:
+      mode: global
+  external:  
+    image: $REGISTRY:5000/${image_namespace}/api.external:${image_tag}
+    networks:
+      - mid-network
+    volumes:
+      - ${WORK_DIR}/openapi/config/external/env:/usr/src/app/externalservice/config/env
+      - ${LOG_DIR}/external:/usr/src/app/externalservice/log
+    ports:
+     - "1330:1330"
+    env_file:
+      - ${WORK_DIR}/swarm.env
+    deploy:
+      mode: replicated
+      replicas: ${external_replicas}
+networks:
+  mid-network:
+    external: 
+      name: mid-network

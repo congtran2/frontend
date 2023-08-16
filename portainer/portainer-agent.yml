@@ -1,0 +1,21 @@
+version: '3.2'
+
+services:
+  agent:
+    image: $REGISTRY:5000/tools/portainer/agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DOCKER_WORK_DIR}/volumes:/var/lib/docker/volumes
+    ports:
+      - target: 9001
+        published: 9002
+        protocol: tcp
+        mode: host
+    networks:
+      - portainer_agent
+    deploy:
+      mode: global
+networks:
+  portainer_agent:
+    external: 
+      name: portainer_agent

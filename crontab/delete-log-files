@@ -1,0 +1,3 @@
+#DMZ & MID trong /app/logs
+* * * * * root find #LOG_DIR# -type f -mtime #MAX_LOGS_DAY# -delete
+

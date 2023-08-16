@@ -1,0 +1,29 @@
+version: '3.2'
+
+services:
+  portainer:
+    image: $REGISTRY:5000/tools/portainer/portainer
+    ports:
+      - "9000:9000"
+      - "8000:8000"
+    volumes:
+      - portainer_volume:/data
+    networks:
+      - portainer_adm
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement: 
+        constraints: 
+          - node.role == manager
+networks:
+  portainer_adm:
+    external: 
+      name: portainer_adm
+volumes:
+  portainer_volume:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '${DATA_DIR}/portainer/data/'

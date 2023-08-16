@@ -1,0 +1,1 @@
+docker node update --label-add postgres=true uatmob-dmz

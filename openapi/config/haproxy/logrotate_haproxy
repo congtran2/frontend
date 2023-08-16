@@ -1,0 +1,28 @@
+/usr/src/logs/haproxy-traffic.log 
+{
+    size 1M
+    rotate 100
+    missingok
+    notifempty
+    sharedscripts
+    postrotate
+    /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+    /bin/kill -HUP `cat /var/run/rsyslogd.pid 2> /dev/null` 2> /dev/null || true
+    endscript
+    copytruncate
+}
+
+/usr/src/logs/haproxy-admin.log 
+{
+    rotate 20
+    daily
+    missingok
+    notifempty
+    compress
+    sharedscript
+        postrotate
+    /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+    /bin/kill -HUP `cat /var/run/rsyslogd.pid 2> /dev/null` 2> /dev/null || true
+    endscript
+    copytruncate
+}

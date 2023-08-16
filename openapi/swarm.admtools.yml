@@ -1,0 +1,19 @@
+version: "3.2"
+services:
+  webadmin:
+    image: $REGISTRY:5000/${image_namespace}/webadmin:${image_tag}
+    networks:
+      - nw_dmz
+    env_file:
+      - ${WORK_DIR}/swarm.env
+    volumes:
+      - ${WORK_DIR}/openapi/config/webadmin/env:/usr/src/app/webadmin/config/env
+      - ${LOG_DIR}/webadmin:/usr/src/app/webadmin/log
+    deploy:
+      mode: replicated
+      replicas: ${webadmin_replicas}
+      placement:
+        constraints: [node.labels.frtend == true]
+networks:
+  nw_dmz:
+    driver: overlay

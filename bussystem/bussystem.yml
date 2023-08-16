@@ -1,0 +1,141 @@
+version: "3.2"
+services:
+    bussystem:
+        image: $REGISTRY:5000/tools/bussystem
+        container_name: bussystem
+        restart: always
+        networks:
+            - nw_bussystem
+        ports:
+            - target: 8001
+              published: 8001
+              protocol: tcp
+              mode: host
+            - target: 61616
+              published: 61616
+              protocol: tcp
+              mode: host
+            - target: 63616
+              published: 63616
+              protocol: tcp
+              mode: host
+            - target: 1099
+              published: 1099
+              protocol: tcp
+              mode: host
+        env_file:
+            - ${WORK_DIR}/swarm.env
+        volumes:
+            - ${WORK_DIR}/bussystem/config:/bussystem/etc
+            - ${LOG_DIR}/bussystem:/app/bussystem/data/logs
+            - ${DATA_DIR}/activemq:/activemq
+        environment:
+            JAVA_TOOL_OPTIONS:
+              -Xms128m 
+              -Xmx4096m
+              -Dcom.sun.management.jmxremote
+              -Dcom.sun.management.jmxremote.port=1099 
+              -Dcom.sun.management.jmxremote.rmi.port=1099 
+              -Dcom.sun.management.jmxremote.local.only=false 
+              -Dcom.sun.management.jmxremote.authenticate=false 
+              -Dcom.sun.management.jmxremote.ssl=false 
+              -Djava.rmi.server.hostname=0.0.0.0
+            LOG_FILE_PATH: /app/bussystem/data/logs
+            APPLICATION_NAME: bussystem
+        deploy:
+            mode: replicated
+            endpoint_mode: dnsrr
+            replicas: 1
+            
+    bussystem-oracle:
+        image: $REGISTRY:5000/tools/bussystem-oracle
+        container_name: bussystem-oracle
+        restart: always
+        depends_on:
+            - bussystem
+        networks:
+            - nw_bussystem
+        ports:
+            - target: 8002
+              published: 8002
+              protocol: tcp
+              mode: host
+        env_file:
+            - ${WORK_DIR}/swarm.env
+        volumes:
+            - ${WORK_DIR}/bussystem/config:/bussystem-oracle/etc
+            - ${LOG_DIR}/bussystem:/app/bussystem/data/logs
+        environment:
+            JAVA_TOOL_OPTIONS:
+              -Xms128m 
+              -Xmx2048m
+              -Duser.timezone=GMT+7
+            LOG_FILE_PATH: /app/bussystem/data/logs
+            APPLICATION_NAME: bussystem-oracle
+        deploy:
+            mode: replicated
+            endpoint_mode: dnsrr
+            replicas: 1
+
+
+    bussystem-report:
+        image: $REGISTRY:5000/tools/bussystem-report
+        container_name: bussystem-report
+        depends_on:
+            - bussystem
+        networks:
+            - nw_bussystem
+        ports:
+            - target: 8003
+              published: 8003
+              protocol: tcp
+              mode: host
+        env_file:
+            - ${WORK_DIR}/swarm.env
+        volumes:
+            - ${WORK_DIR}/bussystem/config:/bussystem-report/etc
+            - ${LOG_DIR}/bussystem:/app/bussystem/data/logs
+            - ${WORK_DIR}/bussystem/statics/ReportTmp:/home/fo/ReportTmp
+            - ${WORK_DIR}/bussystem/statics/image:/home/fo/image
+            - ${DATA_DIR}/reports:/home/fo/reports
+        environment:
+            JAVA_TOOL_OPTIONS:
+              -Xms128m 
+              -Xmx2048m
+            LOG_FILE_PATH: /app/bussystem/data/logs
+            APPLICATION_NAME: bussystem-report
+        deploy:
+            mode: replicated
+            endpoint_mode: dnsrr
+            replicas: 1
+    
+    bussystem-oracle-report:
+        image: $REGISTRY:5000/tools/bussystem-oracle-report
+        container_name: bussystem-oracle-report
+        depends_on:
+            - bussystem
+        networks:
+            - nw_bussystem
+        ports:
+            - target: 8004
+              published: 8004
+              protocol: tcp
+              mode: host
+        env_file:
+            - ${WORK_DIR}/swarm.env
+        volumes:
+            - ${WORK_DIR}/bussystem/config:/bussystem-oracle-report/etc
+            - ${LOG_DIR}/bussystem:/app/bussystem/data/logs
+        environment:
+            JAVA_TOOL_OPTIONS:
+              -Xms128m 
+              -Xmx2048m
+            LOG_FILE_PATH: /app/bussystem/data/logs
+            APPLICATION_NAME: bussystem-oracle-report
+        deploy:
+            mode: replicated
+            endpoint_mode: dnsrr
+            replicas: 1
+networks:
+  nw_bussystem:
+    external: true
